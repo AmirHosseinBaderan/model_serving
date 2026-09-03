@@ -12,7 +12,7 @@ class Predictor:
             dtype=torch.float32
         )
 
-        with torch.inference_model():
+        with torch.inference_mode():
             predictions = self.model(tensor)
         
         return predictions.squeeze(-1).tolist()
