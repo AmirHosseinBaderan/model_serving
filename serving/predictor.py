@@ -1,18 +1,19 @@
-import torch 
-from model.model import SimpleModel
+import numpy as np
+
+from serving.inference_engine import InferenceEngine
 
 
 class Predictor:
-    def __init__(self,model:SimpleModel):
-        self.model = model
 
-    def predict(self,inputs:list[list[float]]) -> list[float]:
-        tensor = torch.tensor(
+    def __init__(self, engine: InferenceEngine) -> None:
+        self.engine = engine
+
+    def predict(self, inputs: list[list[float]]) -> list[float]:
+        array = np.asarray(
             inputs,
-            dtype=torch.float32
+            dtype=np.float32,
         )
 
-        with torch.inference_mode():
-            predictions = self.model(tensor)
-        
+        predictions = self.engine.predict(array)
+
         return predictions.squeeze(-1).tolist()
