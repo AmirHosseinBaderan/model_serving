@@ -1,11 +1,13 @@
 from pathlib import Path
 
+from model.model import SimpleModel
 from serving.loader import ModelLoader
 from serving.predictor import Predictor
+from serving.pytorch_engine import PyTorchEngine
 
 
 MODEL_PATH = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parent.parent
     / "model"
     / "artifacts"
     / "model.pt"
@@ -17,7 +19,9 @@ def test_predictor():
 
     model = loader.load()
 
-    predictor = Predictor(model)
+    engine = PyTorchEngine(model)
+
+    predictor = Predictor(engine)
 
     result = predictor.predict(
         [
@@ -29,5 +33,3 @@ def test_predictor():
     )
 
     assert len(result) == 4
-
-    print(result)
