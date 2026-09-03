@@ -2,6 +2,7 @@ from pathlib import Path
 
 from .loader import ModelLoader
 from .predictor import Predictor
+from .pytorch_engine import PyTorchEngine
 
 class ModelService:
     def __init__(self,model_path:str | Path):
@@ -20,7 +21,8 @@ class ModelService:
         loader = ModelLoader(self.model_path)
 
         model = loader.load()
-        self._predictor = Predictor(model)
+        engine = PyTorchEngine(model)
+        self._predictor = Predictor(engine)
 
     def predict(self,inputs:list[list[float]]) -> list[float]:
         if not self.is_ready:
