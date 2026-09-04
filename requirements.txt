@@ -45,9 +45,11 @@ pillow==12.3.0
 pluggy==1.6.0
 protobuf==7.36.1
 pydantic==2.13.5
+pydantic-settings==2.15.0
 pydantic_core==2.46.5
 Pygments==2.21.0
 pytest==9.1.1
+python-dotenv==1.2.3
 starlette==1.6.0
 sympy==1.14.0
 tensorboard==2.21.0
