@@ -6,16 +6,10 @@ from .schemas import (
     PredictionRequest,
     PredictionResponse
 )
-from serving.server import ModelServer
 
-MODEL_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "model"
-    / "artifacts"
-    / "model.pt"
-)
+from serving.bootstrap import create_server
 
-server = ModelServer(MODEL_PATH)
+server = create_server()
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
