@@ -8,16 +8,19 @@ class FakeInferenceEngine(InferenceEngine):
     def __init__(
         self,
         predictions: list[float] | None = None,
+        auto_start: bool = True,
     ) -> None:
         self._started = False
         self.predictions = predictions or [0.0]
+        self.auto_start = auto_start
 
     @property
     def is_ready(self) -> bool:
         return self._started
 
     def start(self) -> None:
-        self._started = True
+        if self.auto_start:
+            self._started = True
 
     def predict(self, inputs: np.ndarray) -> np.ndarray:
         if not self.is_ready:
