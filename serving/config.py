@@ -1,25 +1,12 @@
-import os
-from dataclasses import dataclass
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-@dataclass(frozen=True)
-class AppConfig:
-    model_backend: str
+class AppConfig(BaseSettings):
+    model_backend: str = "onnx"
     model_path: str
 
-    @classmethod
-    def from_environment(cls) -> "AppConfig":
-        backend = os.getenv(
-            "MODEL_BACKEND",
-            "onnx",
-        ).lower()
-
-        model_path = os.getenv(
-            "MODEL_PATH",
-            "/app/model/artifacts/model.onnx",
-        )
-
-        return cls(
-            model_backend=backend,
-            model_path=model_path,
-        )
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
