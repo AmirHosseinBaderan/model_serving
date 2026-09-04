@@ -13,9 +13,18 @@ RUN pip install \
     --index-url http://web.registery.cloudito.home/repository/pypi-group/simple/ \
     -r requirements-runtime.txt
 
+RUN useradd \
+    --create-home \
+    --shell /usr/sbin/nologin \
+    appuser
+
 COPY api ./api
 COPY model ./model
 COPY serving ./serving
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
