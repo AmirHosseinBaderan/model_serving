@@ -32,3 +32,8 @@ class FakeInferenceEngine(InferenceEngine):
             self.predictions,
             dtype=np.float32,
         ).reshape(-1, 1)
+        
+class FailingInferenceEngine(FakeInferenceEngine):
+
+    def predict(self, inputs: np.ndarray) -> np.ndarray:
+        raise RuntimeError("Internal inference failure.")
