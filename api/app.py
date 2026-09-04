@@ -1,13 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from api.routes.health import create_health_router
 from api.routes.prediction import create_prediction_router
 from api.schemas.error import ErrorResponse
 from serving.bootstrap import create_server
-from serving.exceptions import ModelNotReadyError
+from serving.exceptions import (
+    ModelNotReadyError,
+    InferenceError
+)
 from serving.server import ModelServer
 
 
@@ -35,15 +38,29 @@ def create_app(server: ModelServer | None = None) -> FastAPI:
 
     @app.exception_handler(ModelNotReadyError)
     async def model_not_ready_handler(
-        request,
+        request: Request,
         exc: ModelNotReadyError,
     ) -> JSONResponse:
-
         return JSONResponse(
             status_code=503,
             content=ErrorResponse(
                 error={
                     "code": "MODEL_NOT_READY",
+                    "message": str(exc),
+                }
+            ).model_dump(),
+        )
+        
+    @app.exception_handler(InferenceError)
+    async def inference_error_handler(
+        request: Request,
+        exc: InferenceError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(
+                error={
+                    "code": "INFERENCE_FAILED",
                     "message": str(exc),
                 }
             ).model_dump(),
