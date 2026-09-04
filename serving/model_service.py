@@ -1,4 +1,4 @@
-from serving.exceptions import ModelNotReadyError
+from serving.exceptions import InferenceError, ModelNotReadyError
 from serving.inference_engine import InferenceEngine
 from serving.predictor import Predictor
 
@@ -28,4 +28,9 @@ class ModelService:
                 "Model service is not ready."
             )
 
-        return self._predictor.predict(inputs)
+        try:
+            return self._predictor.predict(inputs)
+        except Exception as exc:
+            raise InferenceError(
+                "Inference failed."
+            ) from exc
