@@ -1,33 +1,29 @@
-from pathlib import Path
-
-from .loader import ModelLoader
 from .predictor import Predictor
-from .pytorch_engine import PyTorchEngine
+from .inference_engine import InferenceEngine
 
 class ModelService:
-    def __init__(self,model_path:str | Path):
-        self.model_path = Path(model_path)
 
-        self._predictor:Predictor|None = None
-
-    @property
-    def is_ready(self)-> bool:
-        return self._predictor is not None
-
-    def start(self):
-        if self.is_ready:
-            return
-        
-        loader = ModelLoader(self.model_path)
-
-        model = loader.load()
-        engine = PyTorchEngine(model)
+    def __init__(
+        self,
+        engine: InferenceEngine,
+    ) -> None:
+        self.engine = engine
         self._predictor = Predictor(engine)
 
-    def predict(self,inputs:list[list[float]]) -> list[float]:
+    @property
+    def is_ready(self) -> bool:
+        return self.engine.is_ready
+
+    def start(self) -> None:
+        if self.is_ready:
+            return
+
+        self.engine.start()
+
+    def predict(self, inputs: list[list[float]]) -> list[float]:
         if not self.is_ready:
             raise RuntimeError(
-                "Modle service has not been started. "
+                "Model service is not ready."
             )
 
         return self._predictor.predict(inputs)

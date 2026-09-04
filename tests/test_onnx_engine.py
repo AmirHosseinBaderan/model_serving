@@ -17,6 +17,8 @@ def test_onnx_engine_predict():
 
     engine = ONNXEngine(MODEL_PATH)
 
+    engine.start()
+
     inputs = np.array(
         [
             [0.0, 0.0],

@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from model.model import SimpleModel
-from serving.loader import ModelLoader
 from serving.predictor import Predictor
 from serving.pytorch_engine import PyTorchEngine
 
@@ -15,11 +13,9 @@ MODEL_PATH = (
 
 
 def test_predictor():
-    loader = ModelLoader(MODEL_PATH)
+    engine = PyTorchEngine(MODEL_PATH)
 
-    model = loader.load()
-
-    engine = PyTorchEngine(model)
+    engine.start()
 
     predictor = Predictor(engine)
 
