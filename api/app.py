@@ -1,61 +1,40 @@
-from pathlib import Path
-from fastapi import FastAPI,HTTPException
 from contextlib import asynccontextmanager
 
-from .schemas import (
-    PredictionRequest,
-    PredictionResponse
-)
+from fastapi import FastAPI
 
+from api.routes.health import create_health_router
+from api.routes.prediction import create_prediction_router
 from serving.bootstrap import create_server
+
 
 server = create_server()
 
+
 @asynccontextmanager
-async def lifespan(app:FastAPI):
-    print("fastapi app started")
+async def lifespan(app: FastAPI):
+    print("FastAPI app started")
+
     server.start()
-    
+
     yield
-    print("fastapi app stoped")
+
+    print("FastAPI app stopped")
+
     server.stop()
-    
+
+
 app = FastAPI(
     title="Production AI",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {
-        "status": "ok",
-    }
-
-
-@app.get("/ready")
-def ready() -> dict[str, bool]:
-    return {
-        "ready": server.is_ready,
-    }
-
-
-@app.post(
-    "/predict",
-    response_model=PredictionResponse,
+app.include_router(
+    create_health_router(server),
+    prefix="/api/v1",
 )
-def predict(
-    request: PredictionRequest,
-) -> PredictionResponse:
 
-    if not server.is_ready:
-        raise HTTPException(
-            status_code=503,
-            detail="Model is not ready.",
-        )
-
-    predictions = server.predict(request.inputs)
-
-    return PredictionResponse(
-        predictions=predictions,
-    )
+app.include_router(
+    create_prediction_router(server),
+    prefix="/api/v1",
+)
