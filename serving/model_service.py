@@ -1,5 +1,7 @@
-from .predictor import Predictor
-from .inference_engine import InferenceEngine
+from serving.exceptions import ModelNotReadyError
+from serving.inference_engine import InferenceEngine
+from serving.predictor import Predictor
+
 
 class ModelService:
 
@@ -22,7 +24,7 @@ class ModelService:
 
     def predict(self, inputs: list[list[float]]) -> list[float]:
         if not self.is_ready:
-            raise RuntimeError(
+            raise ModelNotReadyError(
                 "Model service is not ready."
             )
 
