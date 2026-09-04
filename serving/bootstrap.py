@@ -7,7 +7,7 @@ def create_server(
     config: AppConfig | None = None,
 ) -> ModelServer:
 
-    config = config or AppConfig.from_environment()
+    config = config or AppConfig()
 
     if config.model_backend == "onnx":
         engine = ONNXEngine(config.model_path)
