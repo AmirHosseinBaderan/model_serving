@@ -2,16 +2,15 @@ from pathlib import Path
 
 import pytest
 
-from serving.onnx_engine import ONNXEngine
-from serving.server import ModelServer
 from serving.bootstrap import create_server
 from serving.config import AppConfig
 
-
 config = AppConfig(
-        model_backend="onnx",
-        model_path="model/artifacts/model.onnx",
-    )
+    model_backend="onnx",
+    model_name="xor",
+    model_version="v1",
+    model_artifacts_root="model/artifacts",
+)
 
 
 def test_server_is_not_running_initially():

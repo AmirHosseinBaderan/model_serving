@@ -11,6 +11,8 @@ MODEL_PATH = (
     Path(__file__).resolve().parent.parent
     / "model"
     / "artifacts"
+    / "xor"
+    / "v1"
     / "model.onnx"
 )
 
@@ -78,7 +80,7 @@ def test_onnx_matches_pytorch():
         )
 
     session = ort.InferenceSession(
-        "model/artifacts/model.onnx",
+        str(MODEL_PATH),
         providers=["CPUExecutionProvider"],
     )
 

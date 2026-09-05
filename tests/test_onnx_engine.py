@@ -9,6 +9,8 @@ MODEL_PATH = (
     Path(__file__).resolve().parent.parent
     / "model"
     / "artifacts"
+    / "xor"
+    / "v1"
     / "model.onnx"
 )
 
