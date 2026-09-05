@@ -21,6 +21,24 @@ def test_create_server_resolves_versioned_model(
     )
 
     model_path.touch()
+    metadata_path = (
+        tmp_path
+        / "xor"
+        / "v1"
+        / "metadata.json"
+    )
+
+    metadata_path.write_text(
+        """
+    {
+        "name": "xor",
+        "version": "v1",
+        "format": "onnx",
+        "backend": "onnxruntime"
+    }
+    """,
+        encoding="utf-8",
+    )
 
     config = AppConfig(
         model_backend="onnx",

@@ -16,14 +16,16 @@ def create_server(
         version=config.model_version,
     )
 
-    resolver = ModelArtifactResolver(
-        artifacts_root=config.model_artifacts_root,
-    )
-
-    model_path = resolver.resolve(identifier)
-
     if config.model_backend == "onnx":
-        engine = ONNXEngine(model_path)
+        resolver = ModelArtifactResolver(
+            artifacts_root=config.model_artifacts_root,
+        )
+
+        artifact = resolver.resolve(identifier)
+
+        engine = ONNXEngine(
+            artifact.model_path,
+        )
 
     else:
         raise ValueError(
