@@ -1,0 +1,6 @@
+{
+  "name": "xor",
+  "version": "v1",
+  "format": "onnx",
+  "backend": "onnxruntime"
+}
