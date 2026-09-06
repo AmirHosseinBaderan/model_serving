@@ -28,6 +28,8 @@ class Run:
         default_factory=list
     )
     
+    metadata:dict[str,Any] = field(default_factory=dict)
+    
     def ensure_active(self) -> None:
         if self.status != RunStatus.RUNNING:
             raise ValueError("Run is not active")

@@ -54,5 +54,10 @@ class InMemoryExperimentTracker(ExperimentTracker):
         path: str,
     ) -> None:
         run.ensure_active()
-    
+
         run.artifacts.append(path)
+        
+    def log_metadata(self, run, name, value):
+        run.ensure_active()
+        
+        run.metadata[name] = value

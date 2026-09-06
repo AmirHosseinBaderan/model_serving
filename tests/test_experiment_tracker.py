@@ -191,3 +191,32 @@ def test_cannot_log_artifact_after_run_is_completed() -> None:
             run,
             "model.pt",
         )
+        
+def test_log_metadata_stores_metadata() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metadata(
+        run,
+        "git_commit",
+        "a83f21c",
+    )
+
+    assert run.metadata["git_commit"] == "a83f21c"
+    
+def test_cannot_log_metadata_after_run_is_completed() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+    tracker.finish_run(run)
+
+    with pytest.raises(
+        ValueError,
+        match="Run is not active",
+    ):
+        tracker.log_metadata(
+            run,
+            "git_commit",
+            "a83f21c",
+        )

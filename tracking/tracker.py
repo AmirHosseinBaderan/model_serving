@@ -42,3 +42,11 @@ class ExperimentTracker:
         path: str,
     ) -> None:
         raise NotImplementedError
+    
+    def log_metadata(
+        self,
+        run:Run,
+        name:str,
+        value:Any
+    )-> None:
+        raise NotImplementedError
