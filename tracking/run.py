@@ -34,6 +34,13 @@ class Run:
     
     metadata:dict[str,Any] = field(default_factory=dict)
     
+    @property
+    def duration(self)-> float|None:
+        if self.finished_at is None:
+            return None
+        
+        return (self.finished_at - self.started_at).total_seconds()
+    
     def ensure_active(self) -> None:
         if self.status != RunStatus.RUNNING:
             raise ValueError("Run is not active")

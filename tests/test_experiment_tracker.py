@@ -469,3 +469,30 @@ def test_fail_run_sets_finished_at() -> None:
     tracker.fail_run(run)
 
     assert run.finished_at is not None
+    
+def test_run_duration_is_none_while_running() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    assert run.duration is None
+    
+def test_run_duration_is_available_after_completion() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.finish_run(run)
+
+    assert run.duration is not None
+    assert run.duration >= 0
+    
+def test_run_duration_is_available_after_failure() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.fail_run(run)
+
+    assert run.duration is not None
+    assert run.duration >= 0
