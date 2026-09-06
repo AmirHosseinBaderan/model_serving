@@ -41,6 +41,14 @@ class Run:
         
         return (self.finished_at - self.started_at).total_seconds()
     
+    @property
+    def latest_metrics(self)-> dict[str,Any]:
+        return {
+            name: values[-1].value
+            for name,values in self.metrics.items()
+            if values
+        }
+    
     def ensure_active(self) -> None:
         if self.status != RunStatus.RUNNING:
             raise ValueError("Run is not active")

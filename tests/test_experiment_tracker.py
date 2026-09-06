@@ -548,3 +548,31 @@ def test_get_run_summary_for_unknown_run_fails() -> None:
         match="Run not found",
     ):
         tracker.get_run_summary("unknown")
+        
+def test_latest_metrics_returns_latest_value() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metric(run, "train_loss", 0.8, step=1)
+    tracker.log_metric(run, "train_loss", 0.5, step=2)
+    tracker.log_metric(run, "train_loss", 0.2, step=3)
+
+    assert run.latest_metrics["train_loss"] == 0.2
+    
+def test_latest_metrics_returns_latest_value_for_each_metric() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metric(run, "train_loss", 0.5, step=1)
+    tracker.log_metric(run, "train_loss", 0.2, step=2)
+
+    tracker.log_metric(run, "accuracy", 0.7, step=1)
+    tracker.log_metric(run, "accuracy", 0.9, step=2)
+
+    assert run.latest_metrics == {
+        "train_loss": 0.2,
+        "accuracy": 0.9,
+    }
+    
