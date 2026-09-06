@@ -23,3 +23,15 @@ class ExperimentTracker:
         value: float
     ):
         raise NotImplementedError
+    
+    def finish_run(
+        self,
+        run: Run,
+    ) -> None:
+        raise NotImplementedError
+    
+    def fail_run(
+        self,
+        run: Run,
+    ) -> None:
+        raise NotImplementedError
