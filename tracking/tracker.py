@@ -1,5 +1,6 @@
 from typing import Any
 from .run import Run
+from .experiment import Experiment
 
 class ExperimentTracker:
     def start_run(
@@ -49,4 +50,10 @@ class ExperimentTracker:
         name:str,
         value:Any
     )-> None:
+        raise NotImplementedError
+    
+    def create_experiment(
+        self,
+        name: str,
+    ) -> Experiment:
         raise NotImplementedError

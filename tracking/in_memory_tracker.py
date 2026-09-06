@@ -1,12 +1,14 @@
 from datetime import datetime
 from uuid import uuid4
 
-from .run import Run,RunStatus
+from .run import Run,RunStatus,MetricValue
 from .tracker import ExperimentTracker
+from .experiment import Experiment
 
 class InMemoryExperimentTracker(ExperimentTracker):
     def __init__(self):
         self.runs: dict[str,Run] = {}
+        self.experiments: dict[str, Experiment] = {}
         
     def start_run(self, experiment_name)-> Run:
         run = Run(
@@ -24,13 +26,27 @@ class InMemoryExperimentTracker(ExperimentTracker):
         
         run.parameters[name] = value
         
-    def log_metric(self, run, name, value):
+    def log_metric(
+        self,
+        run: Run,
+        name: str,
+        value: float,
+        step: int,
+    ) -> None:
         run.ensure_active()
-        
+
+        if step < 0:
+            raise ValueError("Metric step cannot be negative")
+
         if name not in run.metrics:
             run.metrics[name] = []
-            
-        run.metrics[name].append(value)
+
+        run.metrics[name].append(
+            MetricValue(
+                value=value,
+                step=step,
+            )
+        )
         
     def finish_run(
         self,
@@ -61,3 +77,13 @@ class InMemoryExperimentTracker(ExperimentTracker):
         run.ensure_active()
         
         run.metadata[name] = value
+        
+    def create_experiment(
+        self,
+        name: str,
+    ) -> Experiment:
+        experiment = Experiment(name=name)
+
+        self.experiments[name] = experiment
+
+        return experiment

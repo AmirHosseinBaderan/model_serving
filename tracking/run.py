@@ -10,6 +10,11 @@ class RunStatus(str,Enum):
     FAILED = "failed"
 
 @dataclass
+class MetricValue:
+    value: float
+    step: int
+
+@dataclass
 class Run:
     id: str
     experiment_name: str
@@ -20,9 +25,7 @@ class Run:
         default_factory=dict
     )
     
-    metrics: dict[str,list[float]] = field(
-        default_factory=dict
-    )
+    metrics: dict[str, list[MetricValue]] = field(default_factory=dict)
     
     artifacts: list[str] = field(
         default_factory=list

@@ -1,5 +1,5 @@
 from tracking.in_memory_tracker import InMemoryExperimentTracker
-from tracking.run import RunStatus
+from tracking.run import RunStatus,MetricValue
 
 import pytest
 
@@ -36,15 +36,20 @@ def test_log_metric_stores_metric_history() -> None:
         run,
         "loss",
         0.8,
+        step=1
     )
 
     tracker.log_metric(
         run,
         "loss",
         0.4,
+        step=2
     )
 
-    assert run.metrics["loss"] == [0.8, 0.4]
+    assert run.metrics["loss"] == [
+        MetricValue(value=0.8, step=1),
+        MetricValue(value=0.4, step=2),
+    ]
     
     
 def test_new_run_is_running() -> None:
@@ -88,6 +93,7 @@ def test_cannot_log_metric_after_run_is_completed() -> None:
             run,
             "loss",
             0.1,
+            step=1
         )
 
 
@@ -130,6 +136,7 @@ def test_cannot_log_metric_after_run_has_failed() -> None:
             run,
             "loss",
             0.1,
+            step=1,
         )
         
 def test_cannot_log_parameter_after_run_is_completed() -> None:
@@ -269,3 +276,100 @@ def test_cannot_log_code_version_after_run_is_completed() -> None:
             "git_commit",
             "a83f21c",
         )
+        
+def test_log_dataset_version() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metadata(
+        run,
+        "dataset_version",
+        "v1",
+    )
+
+    assert run.metadata["dataset_version"] == "v1"
+    
+def test_cannot_log_dataset_version_after_run_is_completed() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+    tracker.finish_run(run)
+
+    with pytest.raises(
+        ValueError,
+        match="Run is not active",
+    ):
+        tracker.log_metadata(
+            run,
+            "dataset_version",
+            "v1",
+        )
+        
+def test_log_multiple_parameters() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_parameter(
+        run,
+        "learning_rate",
+        0.001,
+    )
+
+    tracker.log_parameter(
+        run,
+        "epochs",
+        100,
+    )
+
+    tracker.log_parameter(
+        run,
+        "optimizer",
+        "Adam",
+    )
+
+    assert run.parameters["learning_rate"] == 0.001
+    assert run.parameters["epochs"] == 100
+    assert run.parameters["optimizer"] == "Adam"
+    
+    
+def test_log_metric_stores_step() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metric(
+        run,
+        "train_loss",
+        0.42,
+        step=1,
+    )
+
+    assert run.metrics["train_loss"][0] == MetricValue(
+        value=0.42,
+        step=1,
+    )
+    
+def test_log_metric_rejects_negative_step() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    with pytest.raises(
+        ValueError,
+        match="Metric step cannot be negative",
+    ):
+        tracker.log_metric(
+            run,
+            "train_loss",
+            0.42,
+            step=-1,
+        )
+        
+def test_create_experiment() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    experiment = tracker.create_experiment("xor")
+
+    assert experiment.name == "xor"
