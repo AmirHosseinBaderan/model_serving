@@ -220,3 +220,52 @@ def test_cannot_log_metadata_after_run_is_completed() -> None:
             "git_commit",
             "a83f21c",
         )
+        
+def test_log_environment_metadata() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metadata(
+        run,
+        "python_version",
+        "3.11.13",
+    )
+
+    tracker.log_metadata(
+        run,
+        "pytorch_version",
+        "2.7.1",
+    )
+
+    assert run.metadata["python_version"] == "3.11.13"
+    assert run.metadata["pytorch_version"] == "2.7.1"
+    
+def test_log_code_version() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_metadata(
+        run,
+        "git_commit",
+        "a83f21c",
+    )
+
+    assert run.metadata["git_commit"] == "a83f21c"
+    
+def test_cannot_log_code_version_after_run_is_completed() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+    tracker.finish_run(run)
+
+    with pytest.raises(
+        ValueError,
+        match="Run is not active",
+    ):
+        tracker.log_metadata(
+            run,
+            "git_commit",
+            "a83f21c",
+        )
