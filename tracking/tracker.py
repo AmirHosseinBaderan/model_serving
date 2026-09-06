@@ -57,3 +57,15 @@ class ExperimentTracker:
         name: str,
     ) -> Experiment:
         raise NotImplementedError
+    
+    def get_experiment(
+        self,
+        name: str,
+    ) -> Experiment:
+        raise NotImplementedError
+    
+    def get_experiment_runs(
+        self,
+        experiment_name: str,
+    ) -> list[Run]:
+        raise NotImplementedError

@@ -10,7 +10,7 @@ class InMemoryExperimentTracker(ExperimentTracker):
         self.runs: dict[str,Run] = {}
         self.experiments: dict[str, Experiment] = {}
         
-    def start_run(self, experiment_name)-> Run:
+    def start_run(self, experiment_name)-> Run:       
         run = Run(
             id=str(uuid4()),
             experiment_name=experiment_name,
@@ -18,6 +18,11 @@ class InMemoryExperimentTracker(ExperimentTracker):
         )
         
         self.runs[run.id] = run
+        
+        experiment = self.experiments.get(experiment_name)
+
+        if experiment is not None:
+            experiment.runs.append(run.id)
         
         return run
     
@@ -82,8 +87,25 @@ class InMemoryExperimentTracker(ExperimentTracker):
         self,
         name: str,
     ) -> Experiment:
+        if name in self.experiments:
+            raise ValueError("Experiment already exists")
+    
         experiment = Experiment(name=name)
-
+    
         self.experiments[name] = experiment
-
+    
         return experiment
+    
+    def get_experiment(self, name):
+        if name not in self.experiments:
+            raise ValueError("Experiment not found")
+        
+        return self.experiments[name]
+    
+    def get_experiment_runs(self, experiment_name)-> list[Run]:
+        experiment = self.get_experiment(experiment_name)
+        
+        return [
+            self.runs[run_id]
+            for run_id in experiment.runs
+        ]

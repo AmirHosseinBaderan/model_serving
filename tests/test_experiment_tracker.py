@@ -373,3 +373,61 @@ def test_create_experiment() -> None:
     experiment = tracker.create_experiment("xor")
 
     assert experiment.name == "xor"
+    
+def test_create_duplicate_experiment_fails() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    tracker.create_experiment("xor")
+
+    with pytest.raises(
+        ValueError,
+        match="Experiment already exists",
+    ):
+        tracker.create_experiment("xor")
+        
+def test_get_experiment() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    created = tracker.create_experiment("xor")
+
+    experiment = tracker.get_experiment("xor")
+
+    assert experiment is created
+    
+def test_get_unknown_experiment_fails() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    with pytest.raises(
+        ValueError,
+        match="Experiment not found",
+    ):
+        tracker.get_experiment("unknown")
+        
+def test_experiment_contains_runs() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    experiment = tracker.create_experiment("xor")
+    run = tracker.start_run("xor")
+
+    assert run.id in experiment.runs
+    
+def test_get_experiment_runs() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    tracker.create_experiment("xor")
+
+    run1 = tracker.start_run("xor")
+    run2 = tracker.start_run("xor")
+
+    runs = tracker.get_experiment_runs("xor")
+
+    assert runs == [run1, run2]
+    
+def test_get_runs_for_unknown_experiment_fails() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    with pytest.raises(
+        ValueError,
+        match="Experiment not found",
+    ):
+        tracker.get_experiment_runs("unknown")
