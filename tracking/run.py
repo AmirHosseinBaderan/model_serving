@@ -19,6 +19,7 @@ class Run:
     id: str
     experiment_name: str
     started_at: datetime
+    finished_at: datetime | None = None
     status:RunStatus = RunStatus.RUNNING
     
     parameters: dict[str,Any] = field(

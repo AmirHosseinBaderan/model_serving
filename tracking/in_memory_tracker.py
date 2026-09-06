@@ -60,6 +60,7 @@ class InMemoryExperimentTracker(ExperimentTracker):
         run.ensure_active()
         
         run.status = RunStatus.COMPLETED
+        run.finished_at = datetime.now()
 
     def fail_run(
         self,
@@ -68,6 +69,8 @@ class InMemoryExperimentTracker(ExperimentTracker):
         run.ensure_active()
         
         run.status = RunStatus.FAILED
+        run.finished_at = datetime.now()
+        
         
     def log_artifact(
         self,

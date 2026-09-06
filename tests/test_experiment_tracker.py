@@ -449,3 +449,23 @@ def test_get_unknown_run_fails() -> None:
         match="Run not found",
     ):
         tracker.get_run("unknown")
+        
+def test_finish_run_sets_finished_at() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    assert run.finished_at is None
+
+    tracker.finish_run(run)
+
+    assert run.finished_at is not None
+    
+def test_fail_run_sets_finished_at() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.fail_run(run)
+
+    assert run.finished_at is not None
