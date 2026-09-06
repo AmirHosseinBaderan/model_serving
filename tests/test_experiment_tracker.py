@@ -431,3 +431,21 @@ def test_get_runs_for_unknown_experiment_fails() -> None:
         match="Experiment not found",
     ):
         tracker.get_experiment_runs("unknown")
+        
+def test_get_run() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    result = tracker.get_run(run.id)
+
+    assert result is run
+    
+def test_get_unknown_run_fails() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    with pytest.raises(
+        ValueError,
+        match="Run not found",
+    ):
+        tracker.get_run("unknown")

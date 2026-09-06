@@ -109,3 +109,11 @@ class InMemoryExperimentTracker(ExperimentTracker):
             self.runs[run_id]
             for run_id in experiment.runs
         ]
+        
+    def get_run(self, run_id)-> Run:
+        run = self.runs.get(run_id)
+        
+        if run is None:
+            raise ValueError("Run not found")
+        
+        return run
