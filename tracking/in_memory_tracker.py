@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import uuid4
+from typing import Any
 
 from .run import Run,RunStatus,MetricValue
 from .tracker import ExperimentTracker
@@ -123,3 +124,22 @@ class InMemoryExperimentTracker(ExperimentTracker):
             raise ValueError("Run not found")
         
         return run
+    
+    def get_run_summary(
+        self,
+        run_id: str,
+    ) -> dict[str, Any]:
+        run = self.get_run(run_id)
+
+        return {
+            "id": run.id,
+            "experiment_name": run.experiment_name,
+            "started_at": run.started_at,
+            "finished_at": run.finished_at,
+            "duration": run.duration,
+            "status": run.status,
+            "parameters": run.parameters,
+            "metrics": run.metrics,
+            "metadata": run.metadata,
+            "artifacts": run.artifacts,
+        }

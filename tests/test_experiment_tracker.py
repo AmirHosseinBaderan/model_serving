@@ -520,3 +520,31 @@ def test_log_artifact_rejects_empty_path() -> None:
         match="Artifact path cannot be empty",
     ):
         tracker.log_artifact(run, "")
+        
+def test_run_summary_contains_run_information() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_parameter(run, "learning_rate", 0.01)
+    tracker.log_metric(run, "loss", 0.42, step=1)
+    tracker.log_metadata(run, "git_commit", "a83f21c")
+
+    summary = tracker.get_run_summary(run.id)
+
+    assert summary["id"] == run.id
+    assert summary["experiment_name"] == "xor"
+    assert summary["status"] == RunStatus.RUNNING
+    assert summary["parameters"]["learning_rate"] == 0.01
+    assert summary["metrics"]["loss"][0].value == 0.42
+    assert summary["metrics"]["loss"][0].step == 1
+    assert summary["metadata"]["git_commit"] == "a83f21c"
+    
+def test_get_run_summary_for_unknown_run_fails() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    with pytest.raises(
+        ValueError,
+        match="Run not found",
+    ):
+        tracker.get_run_summary("unknown")
