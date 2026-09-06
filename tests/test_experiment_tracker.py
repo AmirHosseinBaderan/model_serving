@@ -575,4 +575,33 @@ def test_latest_metrics_returns_latest_value_for_each_metric() -> None:
         "train_loss": 0.2,
         "accuracy": 0.9,
     }
-    
+
+def test_track_training_run() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_parameter(run, "learning_rate", 0.01)
+    tracker.log_parameter(run, "epochs", 3)
+    tracker.log_parameter(run, "optimizer", "Adam")
+
+    tracker.log_metadata(run, "git_commit", "a83f21c")
+    tracker.log_metadata(run, "dataset_version", "v1")
+
+    tracker.log_metric(run, "train_loss", 0.8, step=1)
+    tracker.log_metric(run, "train_loss", 0.4, step=2)
+    tracker.log_metric(run, "train_loss", 0.1, step=3)
+
+    tracker.log_artifact(run, "model.pt")
+
+    tracker.finish_run(run)
+
+    assert run.status == RunStatus.COMPLETED
+    assert run.parameters["learning_rate"] == 0.01
+    assert run.parameters["epochs"] == 3
+    assert run.metadata["git_commit"] == "a83f21c"
+    assert run.metadata["dataset_version"] == "v1"
+    assert run.latest_metrics["train_loss"] == 0.1
+    assert run.artifacts == ["model.pt"]
+    assert run.finished_at is not None
+    assert run.duration is not None
