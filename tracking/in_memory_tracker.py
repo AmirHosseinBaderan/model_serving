@@ -47,3 +47,12 @@ class InMemoryExperimentTracker(ExperimentTracker):
         run.ensure_active()
         
         run.status = RunStatus.FAILED
+        
+    def log_artifact(
+        self,
+        run: Run,
+        path: str,
+    ) -> None:
+        run.ensure_active()
+    
+        run.artifacts.append(path)

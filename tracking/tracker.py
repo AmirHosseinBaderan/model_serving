@@ -29,9 +29,16 @@ class ExperimentTracker:
         run: Run,
     ) -> None:
         raise NotImplementedError
-    
+
     def fail_run(
         self,
         run: Run,
+    ) -> None:
+        raise NotImplementedError
+    
+    def log_artifact(
+        self,
+        run: Run,
+        path: str,
     ) -> None:
         raise NotImplementedError

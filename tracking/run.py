@@ -24,6 +24,10 @@ class Run:
         default_factory=dict
     )
     
+    artifacts: list[str] = field(
+        default_factory=list
+    )
+    
     def ensure_active(self) -> None:
         if self.status != RunStatus.RUNNING:
             raise ValueError("Run is not active")

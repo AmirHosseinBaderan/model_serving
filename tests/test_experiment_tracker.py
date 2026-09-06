@@ -164,3 +164,30 @@ def test_cannot_log_parameter_after_run_has_failed() -> None:
             "learning_rate",
             0.001,
         )
+        
+def test_log_artifact_stores_artifact() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_artifact(
+        run,
+        "model.pt",
+    )
+
+    assert run.artifacts == ["model.pt"]
+    
+def test_cannot_log_artifact_after_run_is_completed() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+    tracker.finish_run(run)
+
+    with pytest.raises(
+        ValueError,
+        match="Run is not active",
+    ):
+        tracker.log_artifact(
+            run,
+            "model.pt",
+        )
