@@ -496,3 +496,27 @@ def test_run_duration_is_available_after_failure() -> None:
 
     assert run.duration is not None
     assert run.duration >= 0
+    
+def test_log_multiple_artifacts() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    tracker.log_artifact(run, "model/model.pt")
+    tracker.log_artifact(run, "model/checkpoint.pt")
+
+    assert run.artifacts == [
+        "model/model.pt",
+        "model/checkpoint.pt",
+    ]
+    
+def test_log_artifact_rejects_empty_path() -> None:
+    tracker = InMemoryExperimentTracker()
+
+    run = tracker.start_run("xor")
+
+    with pytest.raises(
+        ValueError,
+        match="Artifact path cannot be empty",
+    ):
+        tracker.log_artifact(run, "")

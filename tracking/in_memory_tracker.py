@@ -79,6 +79,9 @@ class InMemoryExperimentTracker(ExperimentTracker):
     ) -> None:
         run.ensure_active()
 
+        if not path:
+            raise ValueError("Artifact path cannot be empty")
+        
         run.artifacts.append(path)
         
     def log_metadata(self, run, name, value):
