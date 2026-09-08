@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 from model.model import SimpleModel
+from tracking.tracker import ExperimentTracker
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -11,7 +12,12 @@ ARTIFACTS_DIR = BASE_DIR / "artifacts"
 MODEL_PATH = ARTIFACTS_DIR / "model.pt"
 
 
-def train() -> None:
+def train(
+    tracker: ExperimentTracker | None = None,
+    experiment_name: str = "xor",
+    model_path: Path = MODEL_PATH,
+    epochs: int = 1000,
+) -> None:
     torch.manual_seed(42)
 
     model = SimpleModel()
@@ -45,32 +51,89 @@ def train() -> None:
 
     model.train()
 
-    for epoch in range(1000):
-        prediction = model(x)
+    run = None
 
-        loss = criterion(prediction, y)
+    if tracker is not None:
+        try:
+            tracker.get_experiment(experiment_name)
+        except ValueError:
+            tracker.create_experiment(experiment_name)
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        run = tracker.start_run(experiment_name)
 
-        if (epoch + 1) % 100 == 0:
-            print(
-                f"Epoch {epoch + 1:04d} | "
-                f"Loss: {loss.item():.6f}"
+        tracker.log_parameter(
+            run,
+            "learning_rate",
+            0.01,
+        )
+
+        tracker.log_parameter(
+            run,
+            "epochs",
+            epochs,
+        )
+
+        tracker.log_parameter(
+            run,
+            "optimizer",
+            "Adam",
+        )
+
+        tracker.log_metadata(
+            run,
+            "seed",
+            42,
+        )
+
+    try:
+        for epoch in range(epochs):
+            prediction = model(x)
+
+            loss = criterion(prediction, y)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            if run is not None:
+                tracker.log_metric(
+                    run,
+                    "train_loss",
+                    loss.item(),
+                    step=epoch + 1,
+                )
+
+            if (epoch + 1) % 100 == 0:
+                print(
+                    f"Epoch {epoch + 1:04d} | "
+                    f"Loss: {loss.item():.6f}"
+                )
+
+        model_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        torch.save(
+            model.state_dict(),
+            model_path,
+        )
+
+        if run is not None:
+            tracker.log_artifact(
+                run,
+                str(model_path),
             )
 
-    ARTIFACTS_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+            tracker.finish_run(run)
 
-    torch.save(
-        model.state_dict(),
-        MODEL_PATH,
-    )
+        print(f"\nModel saved to: {model_path}")
 
-    print(f"\nModel saved to: {MODEL_PATH}")
+    except Exception:
+        if run is not None:
+            tracker.fail_run(run)
+
+        raise
 
 
 if __name__ == "__main__":
