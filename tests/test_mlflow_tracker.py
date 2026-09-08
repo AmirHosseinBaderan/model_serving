@@ -2,18 +2,32 @@ import mlflow
 
 from tracking.mlflow_tracker import MLflowExperimentTracker
 from tracking.run import RunStatus
+import pytest
 
+def create_tracker(tmp_path):
+    db_path = tmp_path / "mlflow.db"
 
-def test_create_experiment() -> None:
-    tracker = MLflowExperimentTracker()
+    return MLflowExperimentTracker(
+        tracking_uri=f"sqlite:///{db_path}"
+    )
+    
+@pytest.fixture(autouse=True)
+def cleanup_mlflow_run():
+    yield
+
+    if mlflow.active_run() is not None:
+        mlflow.end_run()
+
+def test_create_experiment(tmp_path) -> None:
+    tracker = create_tracker(tmp_path)
 
     experiment = tracker.create_experiment("xor")
 
     assert experiment.name == "xor"
 
 
-def test_start_run() -> None:
-    tracker = MLflowExperimentTracker()
+def test_start_run(tmp_path) -> None:
+    tracker = create_tracker(tmp_path)
 
     tracker.create_experiment("xor")
     run = tracker.start_run("xor")
@@ -22,8 +36,8 @@ def test_start_run() -> None:
     assert run.id
 
 
-def test_log_parameter() -> None:
-    tracker = MLflowExperimentTracker()
+def test_log_parameter(tmp_path) -> None:
+    tracker = create_tracker(tmp_path)
 
     tracker.create_experiment("xor")
     run = tracker.start_run("xor")
@@ -33,8 +47,8 @@ def test_log_parameter() -> None:
     assert run.parameters["learning_rate"] == 0.01
 
 
-def test_log_metric() -> None:
-    tracker = MLflowExperimentTracker()
+def test_log_metric(tmp_path) -> None:
+    tracker = create_tracker(tmp_path)
 
     tracker.create_experiment("xor")
     run = tracker.start_run("xor")
@@ -44,8 +58,8 @@ def test_log_metric() -> None:
     assert run.latest_metrics["loss"] == 0.5
 
 
-def test_finish_run() -> None:
-    tracker = MLflowExperimentTracker()
+def test_finish_run(tmp_path) -> None:
+    tracker = create_tracker(tmp_path)
 
     tracker.create_experiment("xor")
     run = tracker.start_run("xor")

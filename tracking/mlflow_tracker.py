@@ -13,59 +13,89 @@ class MLflowExperimentTracker(ExperimentTracker):
         if tracking_uri:
             mlflow.set_tracking_uri(tracking_uri)
 
-        self.experiments: dict[str, Experiment] = {}
         self.runs: dict[str, Run] = {}
 
     def create_experiment(self, name: str) -> Experiment:
-        if name in self.experiments:
+        if mlflow.get_experiment_by_name(name) is not None:
             raise ValueError("Experiment already exists")
 
-        experiment_id = mlflow.create_experiment(name)
+        mlflow.create_experiment(name)
 
-        experiment = Experiment(name=name)
-        self.experiments[name] = experiment
-
-        return experiment
+        return Experiment(name=name)
 
     def get_experiment(self, name: str) -> Experiment:
-        experiment = self.experiments.get(name)
+        mlflow_experiment = mlflow.get_experiment_by_name(name)
 
-        if experiment is None:
+        if mlflow_experiment is None:
             raise ValueError("Experiment not found")
+
+        experiment = Experiment(name=name)
+
+        for run in mlflow.search_runs(
+            experiment_ids=[mlflow_experiment.experiment_id],
+            output_format="list",
+        ):
+            experiment.runs.append(run.info.run_id)
 
         return experiment
 
     def start_run(self, experiment_name: str) -> Run:
         experiment = self.get_experiment(experiment_name)
-
-        mlflow_run = mlflow.start_run(
-            experiment_id=mlflow.get_experiment_by_name(experiment_name).experiment_id
+    
+        if mlflow.active_run() is not None:
+            raise RuntimeError("Another MLflow run is already active")
+    
+        mlflow_experiment = mlflow.get_experiment_by_name(
+            experiment_name
         )
-
+    
+        mlflow_run = mlflow.start_run(
+            experiment_id=mlflow_experiment.experiment_id
+        )
+    
         run = Run(
             id=mlflow_run.info.run_id,
             experiment_name=experiment.name,
             started_at=datetime.now(),
         )
-
+    
         self.runs[run.id] = run
-        experiment.runs.append(run.id)
-
+    
         return run
 
     def get_run(self, run_id: str) -> Run:
         run = self.runs.get(run_id)
 
-        if run is None:
-            raise ValueError("Run not found")
+        if run is not None:
+            return run
+
+        mlflow_run = mlflow.get_run(run_id)
+
+        run = Run(
+            id=run_id,
+            experiment_name=mlflow_run.data.tags.get(
+                "mlflow.experimentName",
+                "",
+            ),
+            started_at=datetime.fromtimestamp(
+                mlflow_run.info.start_time / 1000
+            ),
+        )
+
+        run.status = RunStatus.COMPLETED
+
+        self.runs[run.id] = run
 
         return run
 
-    def get_experiment_runs(self, experiment_name: str) -> list[Run]:
+    def get_experiment_runs(
+        self,
+        experiment_name: str,
+    ) -> list[Run]:
         experiment = self.get_experiment(experiment_name)
 
         return [
-            self.runs[run_id]
+            self.get_run(run_id)
             for run_id in experiment.runs
         ]
 
@@ -166,3 +196,7 @@ class MLflowExperimentTracker(ExperimentTracker):
             "metadata": run.metadata,
             "artifacts": run.artifacts,
         }
+        
+    def _ensure_no_active_run(self) -> None:
+        if mlflow.active_run() is not None:
+            raise RuntimeError("Another MLflow run is already active")
