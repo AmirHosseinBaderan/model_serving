@@ -9,13 +9,13 @@ from tracking.tracker import ExperimentTracker
 
 BASE_DIR = Path(__file__).resolve().parent
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
-MODEL_PATH = ARTIFACTS_DIR / "model.pt"
 
 
 def train(
     tracker: ExperimentTracker | None = None,
     experiment_name: str = "xor",
-    model_path: Path = MODEL_PATH,
+    model_name: str = "xor",
+    model_version: str = "v1",
     epochs: int = 1000,
 ) -> None:
     torch.manual_seed(42)
@@ -84,6 +84,25 @@ def train(
             "seed",
             42,
         )
+
+        tracker.log_metadata(
+            run,
+            "model_name",
+            model_name,
+        )
+
+        tracker.log_metadata(
+            run,
+            "model_version",
+            model_version,
+        )
+
+    model_path = (
+        ARTIFACTS_DIR
+        / model_name
+        / model_version
+        / "model.pt"
+    )
 
     try:
         for epoch in range(epochs):
